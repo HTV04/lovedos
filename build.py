@@ -1,7 +1,7 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python3
 import os, sys, shutil, re, textwrap
 
-COMPILER    = "i586-pc-msdosdjgpp-gcc"
+COMPILER    = "~/djgpp/bin/i586-pc-msdosdjgpp-gcc"
 SRC_DIR     = "src"
 BIN_DIR     = "bin"
 BIN_NAME    = "love.exe"
@@ -28,7 +28,7 @@ def make_c_include(name, data):
     name = re.sub("[^a-z0-9]", "_", name.lower())
     res = "static const char " + name + "[] = {"
     for c in data:
-        res += str(ord(c)) + ", "
+        res += str(c) + ", "
     res = res.rstrip(", ") + "};"
     return name, textwrap.fill(res, width=79)
 
@@ -46,32 +46,32 @@ def main():
 
   for filename in embedded_files:
     name = os.path.basename(filename)
-    name, text = make_c_include(name, open(filename).read())
-    open("%s/%s.h" % (TEMPSRC_DIR, name), "wb").write(text)
+    name, text = make_c_include(name, open(filename, "rb").read())
+    open("%s/%s.h" % (TEMPSRC_DIR, name), "w").write(text)
 
-  cfiles = filter(lambda x:x.endswith((".c", ".C")), listdir(SRC_DIR))
+  cfiles = [x for x in listdir(SRC_DIR) if x.endswith((".c", ".C"))]
 
   cmd = fmt(
     "{compiler} {flags} {defines} {includes} -o {outfile} {srcfiles} {libs} {argv}",
     {
       "compiler"  : COMPILER,
       "flags"     : " ".join(CFLAGS),
-      "defines"   : " ".join(map(lambda x: "-D " + x, DEFINES)),
-      "includes"  : " ".join(map(lambda x: "-I " + x, INCLUDES)),
+      "defines"   : " ".join(["-D " + x for x in DEFINES]),
+      "includes"  : " ".join(["-I " + x for x in INCLUDES]),
       "outfile"   : BIN_DIR + "/" + BIN_NAME,
       "srcfiles"  : " ".join(cfiles),
-      "libs"      : " ".join(map(lambda x: "-l" + x, DLIBS)),
+      "libs"      : " ".join(["-l" + x for x in DLIBS]),
       "argv"      : " ".join(sys.argv[1:])
     })
 
-  print "compiling..."
+  print("compiling...")
   res = os.system(cmd)
 
-  print "deleting temporary files..."
+  print("deleting temporary files...")
   if os.path.exists(TEMPSRC_DIR):
-      shutil.rmtree(TEMPSRC_DIR)
+    shutil.rmtree(TEMPSRC_DIR)
 
-  print "done" + (" with errors" if res else "")
+  print("done" + (" with errors" if res else ""))
 
 
 

@@ -18,8 +18,8 @@ enum {
   IMAGE_AND,
   IMAGE_OR,
   IMAGE_COLOR,
-} IMAGE_BLEND_MODE;
-
+  IMAGE_BLEND_MODE
+};
 
 typedef struct {
   pixel_t *data;
